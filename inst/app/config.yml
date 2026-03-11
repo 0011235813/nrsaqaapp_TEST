@@ -1,0 +1,26 @@
+# nrsaqaapp configuration
+# Copy this file and edit for your environment.
+# Set R_CONFIG_ACTIVE environment variable to switch profiles.
+#
+# Example (Windows, OWRB):
+#   Sys.setenv(R_CONFIG_ACTIVE = "owrb")
+#
+# Example (another agency):
+#   Sys.setenv(R_CONFIG_ACTIVE = "myagency")
+
+default:
+  # Path to your AWQMS connection script.
+  # This script must define awqms_get_con() and awqms_disconnect().
+  # Set to null to disable ODBC and use file-upload only.
+  awqms_source: null
+
+  # Database table or view to query
+  awqms_table: "results_standard_vw"
+
+  # Max file upload size in bytes (default: 5 GB)
+  max_upload_bytes: 5368709120
+
+owrb:
+  awqms_source: "C:/Users/364483.AGENCY/OneDrive - State of Oklahoma/Documents/R code/NRSA App 3/AWQMS_Source_Code_02262026_v3.R"
+  awqms_table: "results_standard_vw"
+  max_upload_bytes: 5368709120

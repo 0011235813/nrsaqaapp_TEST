@@ -1,0 +1,39 @@
+Package: nrsaqaapp
+Title: NRSA QA Application
+Version: 1.0.0
+Authors@R: 
+    person("Oklahoma Water Resources Board", role = c("aut", "cre"),
+           email = "nrsa-qa@owrb.ok.gov")
+Description: A Shiny application for quality assurance review of National
+    Rivers and Streams Assessment (NRSA) monitoring data. Supports data
+    loading via Excel file upload or direct AWQMS ODBC connection, with
+    site-visit summaries, an interactive site map, detailed per-site QA
+    review, and batch QA reporting across all sites.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.1
+Depends:
+    R (>= 4.1.0)
+Imports:
+    shiny (>= 1.7.0),
+    shinyWidgets (>= 0.7.0),
+    shinyjs (>= 2.1.0),
+    shinydashboard (>= 0.7.2),
+    htmltools (>= 0.5.0),
+    dplyr (>= 1.1.0),
+    lubridate (>= 1.9.0),
+    DT (>= 0.28),
+    leaflet (>= 2.1.0),
+    readr (>= 2.1.0),
+    readxl (>= 1.4.0),
+    bslib (>= 0.5.0),
+    dbplyr (>= 2.3.0),
+    DBI (>= 1.1.0),
+    config (>= 0.3.1),
+    golem (>= 0.4.0)
+Suggests:
+    testthat (>= 3.0.0),
+    covr
+Config/testthat/edition: 3
