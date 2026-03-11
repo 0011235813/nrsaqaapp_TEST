@@ -3,7 +3,7 @@
 > A Shiny application for quality assurance review of **National Rivers and Streams Assessment (NRSA)** monitoring data.
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/your-org/nrsaqaapp/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/your-org/nrsaqaapp/actions/workflows/R-CMD-check.yaml)
+[![R-CMD-check](https://github.com/0011235813/nrsaqaapp/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/0011235813/nrsaqaapp/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 <!-- badges: end -->
@@ -26,7 +26,7 @@ It supports data loading from **Excel file upload** or a direct **AWQMS ODBC con
 
 ```r
 # Install from GitHub
-remotes::install_github("your-org/nrsaqaapp")
+remotes::install_github("0011235813/nrsaqaapp")
 ```
 
 > **Requirements:** R ≥ 4.1.0, and the packages listed in `DESCRIPTION`.
