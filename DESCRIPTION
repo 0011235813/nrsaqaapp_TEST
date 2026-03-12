@@ -29,8 +29,7 @@ Imports:
     readxl (>= 1.4.0),
     bslib (>= 0.5.0),
     dbplyr (>= 2.3.0),
-    DBI (>= 1.1.0),
-    config (>= 0.3.1)
+    DBI (>= 1.1.0)
 Suggests:
     testthat (>= 3.0.0),
     covr,

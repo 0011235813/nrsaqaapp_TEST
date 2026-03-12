@@ -1,14 +1,14 @@
 # =============================================================================
 # app_server.R
-# Top-level server function — wires modules together, owns global state
-# (filters, settings, tab tracking) that spans multiple modules.
 # =============================================================================
 
 #' Application server
 #'
 #' @param input,output,session Standard Shiny server arguments.
+#' @param awqms_enabled Logical — whether AWQMS connection is available.
+#'   Passed in from \code{run_app()} so config is resolved in one place only.
 #' @export
-app_server <- function(input, output, session) {
+app_server <- function(input, output, session, awqms_enabled = FALSE) {
 
   # ---------------------------------------------------------------------------
   # Global reactive state
@@ -18,7 +18,7 @@ app_server <- function(input, output, session) {
   current_font_size <- shiny::reactiveVal("medium")
 
   # ---------------------------------------------------------------------------
-  # Date input renderers (blank by default — avoids Shiny defaulting to today)
+  # Date input renderers
   # ---------------------------------------------------------------------------
   output$ui_start_date <- shiny::renderUI({
     shiny::dateInput("start_date", "Start Date", value = NULL)
@@ -28,42 +28,21 @@ app_server <- function(input, output, session) {
   })
 
   # ---------------------------------------------------------------------------
-  # Config — use same file-finding logic as run_app() so both are consistent
-  # ---------------------------------------------------------------------------
-  config_file <- if (file.exists("config.yml")) {
-    "config.yml"
-  } else {
-    system.file("app/config.yml", package = "nrsaqaapp")
-  }
-
-  cfg <- tryCatch(
-    config::get(file = config_file),
-    error = function(e) list(awqms_source = NULL)
-  )
-
-  # Resolve awqms_source — handle both plain paths and bundled "auto" keyword
-  awqms_path <- cfg$awqms_source
-  if (identical(awqms_path, "auto") || identical(awqms_path, "bundled")) {
-    awqms_path <- system.file("awqms/AWQMS_Source_Code.R", package = "nrsaqaapp")
-  }
-  awqms_enabled <- !is.null(awqms_path) && nzchar(awqms_path) && isTRUE(file.exists(awqms_path))
-
-  # ---------------------------------------------------------------------------
   # Data source module
   # ---------------------------------------------------------------------------
   ds <- mod_data_source_server("data_source",
                                 current_tab   = current_tab,
-                                awqms_enabled = awqms_enabled)
+                                awqms_enabled = isTRUE(awqms_enabled))
 
   # ---------------------------------------------------------------------------
-  # Filtered data — date + project filters applied on top of loaded data
+  # Filtered data
   # ---------------------------------------------------------------------------
   filtered_data <- shiny::reactive({
     shiny::req(ds$source_data())
-    input$apply_filters  # take dependency on Apply Filters button
+    input$apply_filters
 
-    d  <- ds$source_data()
-    ld <- ds$loaded_dates()
+    d      <- ds$source_data()
+    ld     <- ds$loaded_dates()
     s_date <- safe_date(input$start_date) %||% safe_date(ld$start)
     e_date <- safe_date(input$end_date)   %||% safe_date(ld$end)
 
@@ -78,7 +57,7 @@ app_server <- function(input, output, session) {
   })
 
   # ---------------------------------------------------------------------------
-  # Project picker — initialise with all known IDs; update after data loads
+  # Project picker
   # ---------------------------------------------------------------------------
   shiny::observe({
     shinyWidgets::updatePickerInput(session, "project",
@@ -110,7 +89,7 @@ app_server <- function(input, output, session) {
   })
 
   # ---------------------------------------------------------------------------
-  # Persistent settings (localStorage <-> server)
+  # Settings persistence
   # ---------------------------------------------------------------------------
   shiny::observe({ session$sendCustomMessage("loadSettings", list()) })
 
@@ -189,13 +168,6 @@ app_server <- function(input, output, session) {
           shiny::tags$li("Ctrl/Cmd + R \u2014 Apply Filters"),
           shiny::tags$li("Ctrl/Cmd + H \u2014 Help"),
           shiny::tags$li("Escape \u2014 Clear row selection")
-        ),
-        shiny::hr(),
-        shiny::h4("Data Notes"),
-        shiny::tags$ul(
-          shiny::tags$li("Data is loaded from results_standard_vw, filtered to NRSA projects"),
-          shiny::tags$li("Project IDs are read from project_id1 through project_id6"),
-          shiny::tags$li("Site-visits are grouped by parent_activity_id")
         )
       ),
       footer = shiny::modalButton("Close")
@@ -203,7 +175,7 @@ app_server <- function(input, output, session) {
   })
 
   # ---------------------------------------------------------------------------
-  # Tab tracking + Source modal trigger
+  # Tab tracking
   # ---------------------------------------------------------------------------
   shiny::observeEvent(input$tabs, {
     shiny::req(input$tabs)
@@ -215,7 +187,7 @@ app_server <- function(input, output, session) {
   })
 
   # ---------------------------------------------------------------------------
-  # Summary module — returns the selected group ID reactive
+  # Modules
   # ---------------------------------------------------------------------------
   selected_group <- mod_summary_server(
     "summary",
@@ -224,9 +196,6 @@ app_server <- function(input, output, session) {
     source_mode   = ds$source_mode
   )
 
-  # ---------------------------------------------------------------------------
-  # Map module
-  # ---------------------------------------------------------------------------
   mod_map_server(
     "map",
     filtered_data  = filtered_data,
@@ -234,25 +203,19 @@ app_server <- function(input, output, session) {
     summary_proxy  = "summary-summary_table"
   )
 
-  # ---------------------------------------------------------------------------
-  # QA Review module
-  # ---------------------------------------------------------------------------
   mod_qa_review_server(
     "qa",
     filtered_data  = filtered_data,
     selected_group = selected_group
   )
 
-  # ---------------------------------------------------------------------------
-  # Batch QA module
-  # ---------------------------------------------------------------------------
   mod_batch_qa_server(
     "batch_qa",
     filtered_data = filtered_data
   )
 
   # ---------------------------------------------------------------------------
-  # Escape key clears row selection
+  # Escape key clears selection
   # ---------------------------------------------------------------------------
   shiny::observeEvent(input$clear_selection, {
     DT::dataTableProxy("summary-summary_table") |> DT::selectRows(NULL)
