@@ -30,11 +30,24 @@
 #' @export
 run_app <- function(..., config_profile = Sys.getenv("R_CONFIG_ACTIVE", "default")) {
   Sys.setenv(R_CONFIG_ACTIVE = config_profile)
-  cfg <- tryCatch(config::get(), error = function(e) list(
-    awqms_source    = NULL,
-    awqms_table     = "results_standard_vw",
-    max_upload_bytes = 5 * 1024^3
-  ))
+
+  # Locate config.yml:
+  # 1. Check working directory first — allows users to override with their own copy
+  # 2. Fall back to the copy bundled inside the installed package
+  config_file <- if (file.exists("config.yml")) {
+    "config.yml"
+  } else {
+    system.file("app/config.yml", package = "nrsaqaapp")
+  }
+
+  cfg <- tryCatch(
+    config::get(file = config_file),
+    error = function(e) list(
+      awqms_source     = NULL,
+      awqms_table      = "results_standard_vw",
+      max_upload_bytes = 5 * 1024^3
+    )
+  )
 
   # Apply upload size limit from config
   options(shiny.maxRequestSize = cfg$max_upload_bytes %||% (5 * 1024^3))
