@@ -21,6 +21,6 @@ default:
   max_upload_bytes: 5368709120
 
 owrb:
-  awqms_source: "C:/Users/364483.AGENCY/OneDrive - State of Oklahoma/Documents/R code/NRSA App 3/AWQMS_Source_Code_02262026_v3.R"
+  awqms_source: !expr system.file("awqms/AWQMS_Source_Code.R", package = "nrsaqaapp")
   awqms_table: "results_standard_vw"
   max_upload_bytes: 5368709120
