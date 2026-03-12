@@ -9,3 +9,6 @@ inst/doc
 /man/
 NAMESPACE
 *.tar.gz
+.httr-oauth
+.DS_Store
+.quarto
