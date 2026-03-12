@@ -307,7 +307,7 @@ mod_data_source_server <- function(id, current_tab, awqms_enabled = TRUE) {
                              shiny::tags$small("ODBC connection",
                                                style = "color:#888;")),
           width = "100%", style = "height:160px;font-size:16px;",
-          disabled = if (!awqms_enabled) "disabled" else NULL)
+          disabled = !awqms_enabled)
       )
     )
   )
@@ -330,7 +330,7 @@ mod_data_source_server <- function(id, current_tab, awqms_enabled = TRUE) {
           label = shiny::div(shiny::icon("database", style = "font-size:48px;"),
                              shiny::br(), shiny::br(), "Connect to AWQMS"),
           width = "100%", style = "height:150px;font-size:18px;",
-          disabled = if (!awqms_enabled) "disabled" else NULL)
+          disabled = !awqms_enabled)
       )
     ),
     footer = shiny::tagList(shiny::modalButton("Cancel"))

@@ -28,14 +28,32 @@ app_server <- function(input, output, session) {
   })
 
   # ---------------------------------------------------------------------------
+  # Config — use same file-finding logic as run_app() so both are consistent
+  # ---------------------------------------------------------------------------
+  config_file <- if (file.exists("config.yml")) {
+    "config.yml"
+  } else {
+    system.file("app/config.yml", package = "nrsaqaapp")
+  }
+
+  cfg <- tryCatch(
+    config::get(file = config_file),
+    error = function(e) list(awqms_source = NULL)
+  )
+
+  # Resolve awqms_source — handle both plain paths and bundled "auto" keyword
+  awqms_path <- cfg$awqms_source
+  if (identical(awqms_path, "auto") || identical(awqms_path, "bundled")) {
+    awqms_path <- system.file("awqms/AWQMS_Source_Code.R", package = "nrsaqaapp")
+  }
+  awqms_enabled <- !is.null(awqms_path) && nzchar(awqms_path) && isTRUE(file.exists(awqms_path))
+
+  # ---------------------------------------------------------------------------
   # Data source module
   # ---------------------------------------------------------------------------
-  cfg           <- tryCatch(config::get(), error = function(e) list(awqms_source = NULL))
-  awqms_enabled <- isTRUE(!is.null(cfg$awqms_source) && nzchar(cfg$awqms_source))
-
   ds <- mod_data_source_server("data_source",
-                                current_tab    = current_tab,
-                                awqms_enabled  = awqms_enabled)
+                                current_tab   = current_tab,
+                                awqms_enabled = awqms_enabled)
 
   # ---------------------------------------------------------------------------
   # Filtered data — date + project filters applied on top of loaded data
@@ -92,7 +110,7 @@ app_server <- function(input, output, session) {
   })
 
   # ---------------------------------------------------------------------------
-  # Persistent settings (localStorage ↔ server)
+  # Persistent settings (localStorage <-> server)
   # ---------------------------------------------------------------------------
   shiny::observe({ session$sendCustomMessage("loadSettings", list()) })
 
@@ -178,17 +196,6 @@ app_server <- function(input, output, session) {
           shiny::tags$li("Data is loaded from results_standard_vw, filtered to NRSA projects"),
           shiny::tags$li("Project IDs are read from project_id1 through project_id6"),
           shiny::tags$li("Site-visits are grouped by parent_activity_id")
-        ),
-        shiny::hr(),
-        shiny::h4("Installation"),
-        shiny::tags$ul(
-          shiny::tags$li(shiny::tags$code(
-            'remotes::install_github("your-org/nrsaqaapp")'
-          )),
-          shiny::tags$li("Copy inst/app/config.yml and set your awqms_source path"),
-          shiny::tags$li(shiny::tags$code(
-            'Sys.setenv(R_CONFIG_ACTIVE = "myagency"); nrsaqaapp::run_app()'
-          ))
         )
       ),
       footer = shiny::modalButton("Close")
@@ -203,7 +210,6 @@ app_server <- function(input, output, session) {
     if (input$tabs != "source") current_tab(input$tabs)
     if (input$tabs == "source") {
       shinydashboard::updateTabItems(session, "tabs", current_tab())
-      # Signal data source module to open its choice modal
       shinyjs::click("data_source-open_source_modal")
     }
   })
